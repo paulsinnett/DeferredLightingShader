@@ -1,6 +1,6 @@
 // Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Hidden/Internal-DeferredShading" {
+Shader "Custom/Internal-DeferredShading" {
 Properties {
     _LightTexture0 ("", any) = "" {}
     _LightTextureB0 ("", 2D) = "" {}
@@ -62,9 +62,8 @@ half4 CalculateLight (unity_v2f_deferred i)
     ind.diffuse = 0;
     ind.specular = 0;
 
-    half4 res = UNITY_BRDF_PBS (data.diffuseColor, data.specularColor, oneMinusReflectivity, data.smoothness, data.normalWorld, -eyeVec, light, ind);
-
-    return res;
+    half4 res = UNITY_BRDF_PBS (1, 0, oneMinusReflectivity, data.smoothness, data.normalWorld, -eyeVec, light, ind);
+	return res;
 }
 
 #ifdef UNITY_HDR_ON
@@ -106,6 +105,7 @@ CGPROGRAM
 
 #include "UnityCG.cginc"
 
+sampler2D _MyGBufferCopy;
 sampler2D _LightBuffer;
 struct v2f {
     float4 vertex : SV_POSITION;
@@ -125,7 +125,9 @@ v2f vert (float4 vertex : POSITION, float2 texcoord : TEXCOORD0)
 
 fixed4 frag (v2f i) : SV_Target
 {
-    return -log2(tex2D(_LightBuffer, i.texcoord));
+	float light = -log2(tex2D(_LightBuffer, i.texcoord)).r;
+	fixed4 tex = tex2D(_MyGBufferCopy, i.texcoord);
+	return lerp(1 - tex, tex, step(0.5, light));
 }
 ENDCG
 }
