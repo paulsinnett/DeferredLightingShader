@@ -52,10 +52,10 @@
 			half4 emission = half4(s.Emission, 1);
 
 			#ifdef UNITY_LIGHT_FUNCTION_APPLY_INDIRECT
-				emission.rgb += s.Albedo * gi.indirect.diffuse;
+				emission.rgb += gi.indirect.diffuse;
 			#endif
 
-			return 0;
+			return emission;
 		}
 
 		void LightingMyLambert_GI (
